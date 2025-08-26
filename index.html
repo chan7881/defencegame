@@ -27,17 +27,22 @@
     <div id="result" style="text-align:center; margin-top:10px;"></div>
     <script>
         // 물리 상수
-        const g = 9.8; // 중력가속도 (m/s^2)
-        const groundY = 750; // 지상 위치 (canvas y좌표)
+        const g = 9.8 * 0.1; // 중력가속도 0.1배속 (m/s^2)
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const earthRadius = 120; // 지구 반지름 (px)
+        const earthX = canvas.width / 2;
+        const earthY = canvas.height / 2;
+        const meteorStartRadius = earthRadius + 250; // 운석 시작 반지름 (px)
         const scale = 1.0; // 1px = 1m
 
-        // 운석 클래스
+        // 운석 클래스 (지구 중심으로 낙하)
         class Meteor {
-            constructor(x, y, radius) {
-                this.x = x;
-                this.y = y; // canvas y좌표
-                this.radius = radius;
-                this.altitude = (groundY - y) * scale; // m
+            constructor(angle, radius, size) {
+                this.angle = angle; // 라디안
+                this.radius = radius; // 지구 중심~운석 거리 (px)
+                this.size = size; // 운석 크기 (px)
+                this.altitude = (radius - earthRadius) * scale; // m
                 this.velocity = 0; // m/s
                 this.time = 0; // s
                 this.active = true;
@@ -51,18 +56,26 @@
                 this.time += dt;
                 this.velocity = g * this.time;
                 this.altitude -= this.velocity * dt;
-                this.y = groundY - this.altitude / scale;
+                this.radius = earthRadius + this.altitude / scale;
                 if (this.altitude <= 0) {
                     this.active = false;
                 }
             }
             draw(ctx) {
+                const x = earthX + Math.cos(this.angle) * this.radius;
+                const y = earthY + Math.sin(this.angle) * this.radius;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+                ctx.arc(x, y, this.size, 0, 2 * Math.PI);
                 ctx.fillStyle = this.active ? "#ff9933" : "#555";
                 ctx.fill();
                 ctx.strokeStyle = "#fff";
                 ctx.stroke();
+            }
+            getPosition() {
+                return {
+                    x: earthX + Math.cos(this.angle) * this.radius,
+                    y: earthY + Math.sin(this.angle) * this.radius
+                };
             }
         }
 
@@ -79,7 +92,6 @@
         function checkShot(meteor) {
             if (!meteor.shotReserved || !meteor.active) return;
             if (meteor.time >= meteor.shotTime) {
-                // 실제 고도/속력
                 let realAltitude = meteor.altitude;
                 let realVelocity = meteor.velocity;
                 let inputAltitude = meteor.shotAltitude;
@@ -92,24 +104,32 @@
             }
         }
 
-        // 운석 생성
+        // 운석 생성 (지구 중심에서 랜덤 각도로)
         let meteors = [];
         function spawnMeteor() {
-            let x = 100 + Math.random() * 400;
-            let y = 50;
-            let radius = 30 + Math.random() * 20;
-            meteors.push(new Meteor(x, y, radius));
+            let angle = Math.random() * 2 * Math.PI;
+            let radius = meteorStartRadius;
+            let size = 30 + Math.random() * 20;
+            meteors.push(new Meteor(angle, radius, size));
         }
 
         // 게임 루프
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
         let lastTime = null;
         function gameLoop(ts) {
             if (!lastTime) lastTime = ts;
             let dt = (ts - lastTime) / 1000;
             lastTime = ts;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 지구 그리기
+            ctx.beginPath();
+            ctx.arc(earthX, earthY, earthRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = "#3399ff";
+            ctx.fill();
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.lineWidth = 1;
 
             meteors.forEach(meteor => {
                 meteor.update(dt);
@@ -135,10 +155,12 @@
             let my = e.clientY - rect.top;
             selectedMeteor = null;
             for (let meteor of meteors) {
-                if (meteor.active &&
-                        Math.hypot(mx - meteor.x, my - meteor.y) < meteor.radius) {
-                    selectedMeteor = meteor;
-                    break;
+                if (meteor.active) {
+                    let pos = meteor.getPosition();
+                    if (Math.hypot(mx - pos.x, my - pos.y) < meteor.size) {
+                        selectedMeteor = meteor;
+                        break;
+                    }
                 }
             }
             if (selectedMeteor) {
