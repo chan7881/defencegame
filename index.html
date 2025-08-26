@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>운석 격추 교육용 게임</title>
+    <style>
+        body { background: #222; color: #fff; font-family: sans-serif; }
+        #gameCanvas { background: #111; display: block; margin: 20px auto; border: 2px solid #444; }
+        #info, #inputForm { text-align: center; margin: 10px; }
+        #meteorInfo { margin: 10px 0; }
+        input[type="number"] { width: 80px; }
+        button { margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;">운석 격추 교육용 게임</h1>
+    <div id="info">
+        <span>운석을 클릭하면 고도와 속력이 표시됩니다.<br>운석을 격추하려면 해당 운석을 클릭 후, 고도와 속력을 정확히 입력하세요.</span>
+    </div>
+    <canvas id="gameCanvas" width="600" height="800"></canvas>
+    <div id="meteorInfo"></div>
+    <form id="inputForm" style="display:none;">
+        <label>고도(미터): <input type="number" id="inputAltitude" required></label>
+        <label>속력(미터/초): <input type="number" id="inputVelocity" required></label>
+        <button type="submit">대포 발사 예약</button>
+    </form>
+    <div id="result" style="text-align:center; margin-top:10px;"></div>
+    <script>
+        // 물리 상수
+        const g = 9.8; // 중력가속도 (m/s^2)
+        const groundY = 750; // 지상 위치 (canvas y좌표)
+        const scale = 1.0; // 1px = 1m
+
+        // 운석 클래스
+        class Meteor {
+            constructor(x, y, radius) {
+                this.x = x;
+                this.y = y; // canvas y좌표
+                this.radius = radius;
+                this.altitude = (groundY - y) * scale; // m
+                this.velocity = 0; // m/s
+                this.time = 0; // s
+                this.active = true;
+                this.shotReserved = false;
+                this.shotTime = null;
+                this.shotAltitude = null;
+                this.shotVelocity = null;
+            }
+            update(dt) {
+                if (!this.active) return;
+                this.time += dt;
+                this.velocity = g * this.time;
+                this.altitude -= this.velocity * dt;
+                this.y = groundY - this.altitude / scale;
+                if (this.altitude <= 0) {
+                    this.active = false;
+                }
+            }
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = this.active ? "#ff9933" : "#555";
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.stroke();
+            }
+        }
+
+        // 대포 발사 예약 및 판정
+        function reserveShot(meteor, altitude, velocity) {
+            meteor.shotReserved = true;
+            meteor.shotAltitude = altitude;
+            meteor.shotVelocity = velocity;
+            // shotTime 계산: t = sqrt(2 * (h0 - h_shot) / g)
+            let t_shot = Math.sqrt(2 * (meteor.altitude - altitude) / g) + meteor.time;
+            meteor.shotTime = t_shot;
+        }
+
+        function checkShot(meteor) {
+            if (!meteor.shotReserved || !meteor.active) return;
+            if (meteor.time >= meteor.shotTime) {
+                // 실제 고도/속력
+                let realAltitude = meteor.altitude;
+                let realVelocity = meteor.velocity;
+                let inputAltitude = meteor.shotAltitude;
+                let inputVelocity = meteor.shotVelocity;
+                let hit = (Math.round(realAltitude) === Math.round(inputAltitude)) &&
+                                    (Math.round(realVelocity) === Math.round(inputVelocity));
+                meteor.active = false;
+                showResult(hit, realAltitude, realVelocity, inputAltitude, inputVelocity);
+                meteor.shotReserved = false;
+            }
+        }
+
+        // 운석 생성
+        let meteors = [];
+        function spawnMeteor() {
+            let x = 100 + Math.random() * 400;
+            let y = 50;
+            let radius = 30 + Math.random() * 20;
+            meteors.push(new Meteor(x, y, radius));
+        }
+
+        // 게임 루프
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        let lastTime = null;
+        function gameLoop(ts) {
+            if (!lastTime) lastTime = ts;
+            let dt = (ts - lastTime) / 1000;
+            lastTime = ts;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            meteors.forEach(meteor => {
+                meteor.update(dt);
+                meteor.draw(ctx);
+                checkShot(meteor);
+            });
+
+            // 운석이 모두 떨어졌으면 새 운석 생성
+            if (meteors.every(m => !m.active)) {
+                spawnMeteor();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+        spawnMeteor();
+        requestAnimationFrame(gameLoop);
+
+        // 운석 클릭 이벤트
+        let selectedMeteor = null;
+        canvas.addEventListener("click", function(e) {
+            let rect = canvas.getBoundingClientRect();
+            let mx = e.clientX - rect.left;
+            let my = e.clientY - rect.top;
+            selectedMeteor = null;
+            for (let meteor of meteors) {
+                if (meteor.active &&
+                        Math.hypot(mx - meteor.x, my - meteor.y) < meteor.radius) {
+                    selectedMeteor = meteor;
+                    break;
+                }
+            }
+            if (selectedMeteor) {
+                showMeteorInfo(selectedMeteor);
+                document.getElementById("inputForm").style.display = "inline-block";
+                document.getElementById("result").textContent = "";
+            }
+        });
+
+        // 운석 정보 표시
+        function showMeteorInfo(meteor) {
+            document.getElementById("meteorInfo").innerHTML =
+                `<b>운석 정보</b><br>
+                고도: <b>${Math.round(meteor.altitude)}</b> m<br>
+                속력: <b>${Math.round(meteor.velocity)}</b> m/s`;
+            document.getElementById("inputAltitude").value = Math.round(meteor.altitude);
+            document.getElementById("inputVelocity").value = Math.round(meteor.velocity);
+        }
+
+        // 대포 발사 예약 폼
+        document.getElementById("inputForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            if (!selectedMeteor || !selectedMeteor.active) return;
+            let inputAltitude = parseInt(document.getElementById("inputAltitude").value, 10);
+            let inputVelocity = parseInt(document.getElementById("inputVelocity").value, 10);
+            reserveShot(selectedMeteor, inputAltitude, inputVelocity);
+            document.getElementById("result").textContent = "대포 발사가 예약되었습니다!";
+            document.getElementById("inputForm").style.display = "none";
+        });
+
+        // 결과 표시
+        function showResult(hit, realAlt, realVel, inputAlt, inputVel) {
+            if (hit) {
+                document.getElementById("result").innerHTML =
+                    `<span style="color:lime;">격추 성공!</span><br>
+                    실제 고도: ${Math.round(realAlt)} m, 입력: ${inputAlt} m<br>
+                    실제 속력: ${Math.round(realVel)} m/s, 입력: ${inputVel} m/s`;
+            } else {
+                document.getElementById("result").innerHTML =
+                    `<span style="color:red;">격추 실패!</span><br>
+                    실제 고도: ${Math.round(realAlt)} m, 입력: ${inputAlt} m<br>
+                    실제 속력: ${Math.round(realVel)} m/s, 입력: ${inputVel} m/s`;
+            }
+        }
+    </script>
+</body>
+</html>
