@@ -1,210 +1,668 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>운석 격추 교육용 게임</title>
+    <title>역학적 에너지 보존: 운석 격추 게임</title>
     <style>
-        body { background: #222; color: #fff; font-family: sans-serif; }
-        #gameCanvas { background: #111; display: block; margin: 20px auto; border: 2px solid #444; }
-        #info, #inputForm { text-align: center; margin: 10px; }
-        #meteorInfo { margin: 10px 0; }
-        input[type="number"] { width: 80px; }
-        button { margin-left: 10px; }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: radial-gradient(ellipse at 60% 40%, #0f2027 0%, #2c5364 100%);
+        }
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: transparent;
+            width: 100vw;
+            height: 100vh;
+        }
+        #uiPanel {
+            position: absolute;
+            top: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20,30,50,0.85);
+            color: #e0f7fa;
+            padding: 22px 32px;
+            border-radius: 22px;
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            z-index: 10;
+            min-width: 340px;
+            box-shadow: 0 4px 32px #00eaff44, 0 1px 8px #0008;
+            border: 1.5px solid #00eaff88;
+            backdrop-filter: blur(6px);
+        }
+        #uiPanel input {
+            width: 70px;
+            margin-right: 10px;
+            background: #101c2c;
+            color: #00eaff;
+            border: 1.5px solid #00eaff88;
+            border-radius: 7px;
+            font-size: 1.05em;
+            padding: 4px 8px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        #uiPanel input:focus {
+            border: 1.5px solid #00ffd0;
+            background: #162a3a;
+        }
+        #meteorInfo {
+            margin-bottom: 12px;
+            color: #00eaff;
+            font-size: 1.08em;
+            letter-spacing: 0.5px;
+        }
+        #shotResult {
+            color: #ff2e88;
+            font-weight: bold;
+            margin-top: 10px;
+            text-shadow: 0 0 8px #ff2e88aa;
+            font-size: 1.08em;
+        }
+        #startBtn {
+            display: block;
+            margin: 0 auto 16px auto;
+            padding: 10px 28px;
+            font-size: 1.18em;
+            background: linear-gradient(90deg, #00eaff 0%, #0055ff 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            font-weight: 600;
+            box-shadow: 0 2px 12px #00eaff44;
+            letter-spacing: 1px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        #startBtn:hover {
+            background: linear-gradient(90deg, #00ffd0 0%, #0055ff 100%);
+            box-shadow: 0 4px 24px #00eaff88;
+        }
+        #shotQueuePanel {
+            position: absolute;
+            top: 32px;
+            right: 40px;
+            background: rgba(20,30,50,0.85);
+            color: #e0f7fa;
+            padding: 20px 22px;
+            border-radius: 22px;
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            z-index: 10;
+            min-width: 240px;
+            box-shadow: 0 4px 32px #00eaff44, 0 1px 8px #0008;
+            border: 1.5px solid #00eaff88;
+            backdrop-filter: blur(6px);
+        }
+        #shotQueuePanel h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.12em;
+            color: #00eaff;
+            letter-spacing: 1px;
+            font-weight: 700;
+            text-shadow: 0 0 8px #00eaff88;
+        }
+        #shotQueueList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #shotQueueList li {
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #101c2c 0%, #162a3a 100%);
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 1.01em;
+            color: #00eaff;
+            border: 1px solid #00eaff33;
+            box-shadow: 0 1px 8px #00eaff22;
+        }
+        #shotQueueList li b {
+            color: #ff2e88;
+            text-shadow: 0 0 6px #ff2e88aa;
+        }
+        #statsPanel {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            background: rgba(20,30,50,0.85);
+            color: #e0f7fa;
+            padding: 16px 22px;
+            border-radius: 16px;
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            z-index: 20;
+            min-width: 120px;
+            box-shadow: 0 2px 16px #00eaff44, 0 1px 8px #0008;
+            border: 1.5px solid #00eaff88;
+            backdrop-filter: blur(6px);
+            font-size: 1.08em;
+        }
+        #statsPanel b {
+            color: #00eaff;
+            font-weight: 700;
+            text-shadow: 0 0 6px #00eaff88;
+        }
+        label {
+            color: #e0f7fa;
+            font-size: 1.05em;
+            margin-right: 8px;
+        }
+        form button[type=\"submit\"] {
+            background: linear-gradient(90deg, #00eaff 0%, #0055ff 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 7px 18px;
+            font-size: 1.08em;
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #00eaff44;
+            margin-left: 10px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        form button[type=\"submit\"]:hover {
+            background: linear-gradient(90deg, #00ffd0 0%, #0055ff 100%);
+            box-shadow: 0 4px 16px #00eaff88;
+        }
     </style>
 </head>
 <body>
-    <h1 style="text-align:center;">운석 격추 교육용 게임</h1>
-    <div id="info">
-        <span>운석을 클릭하면 고도와 속력이 표시됩니다.<br>운석을 격추하려면 해당 운석을 클릭 후, 고도와 속력을 정확히 입력하세요.</span>
+    <canvas id="gameCanvas"></canvas>
+    <div id="statsPanel">
+        <div id="successCount">격추 성공: <b>0</b></div>
+        <div id="failCount">격추 실패: <b>0</b></div>
     </div>
-    <canvas id="gameCanvas" width="600" height="800"></canvas>
-    <div id="meteorInfo"></div>
-    <form id="inputForm" style="display:none;">
-        <label>고도(미터): <input type="number" id="inputAltitude" required></label>
-        <label>속력(미터/초): <input type="number" id="inputVelocity" required></label>
-        <button type="submit">대포 발사 예약</button>
-    </form>
-    <div id="result" style="text-align:center; margin-top:10px;"></div>
+    <div id="uiPanel">
+        <button id="startBtn">게임 시작</button>
+        <div id="meteorInfo">운석을 클릭해 정보를 확인하세요.</div>
+        <form id="shotForm" autocomplete="off">
+            <label>격추 고도(m): <input type="number" id="inputAltitude" step="1"></label>
+            <label>운석 속력(m/s): <input type="number" id="inputVelocity" step="1"></label>
+            <button type="submit">대포 발사 예약</button>
+        </form>
+        <div id="shotResult"></div>
+    </div>
+    <div id="shotQueuePanel">
+        <h3>대포 발사 대기열</h3>
+        <ul id="shotQueueList"></ul>
+    </div>
     <script>
-        // 물리 상수
-        const g = 9.8 * 0.1; // 중력가속도 0.1배속 (m/s^2)
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        const earthRadius = 120; // 지구 반지름 (px)
-        const earthX = canvas.width / 2;
-        const earthY = canvas.height / 2;
-        const meteorStartRadius = earthRadius + 250; // 운석 시작 반지름 (px)
-        const scale = 1.0; // 1px = 1m
+    // ====== 상수 및 설정 ======
+    const GRAVITY = 9.8; // m/s²
+    const METEOR_SPAWN_ACCEL = 0.97;
+    const METEOR_SPAWN_MIN_INTERVAL = 800;
+    const MAX_METEOR_COUNT = 3;
+    const CANNONBALL_SPEED = 500; // m/s
+    const DT_SCALE = 0.1; // 시간 흐름 배속(1/10)
 
-        // 운석 클래스 (지구 중심으로 낙하)
-        class Meteor {
-            constructor(angle, radius, size) {
-                this.angle = angle; // 라디안
-                this.radius = radius; // 지구 중심~운석 거리 (px)
-                this.size = size; // 운석 크기 (px)
-                this.altitude = (radius - earthRadius) * scale; // m
-                this.velocity = 0; // m/s
-                this.time = 0; // s
-                this.active = true;
-                this.shotReserved = false;
-                this.shotTime = null;
-                this.shotAltitude = null;
-                this.shotVelocity = null;
+    // ====== 캔버스 및 UI 요소 ======
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const meteorInfo = document.getElementById('meteorInfo');
+    const shotForm = document.getElementById('shotForm');
+    const inputAltitude = document.getElementById('inputAltitude');
+    const inputVelocity = document.getElementById('inputVelocity');
+    const shotResult = document.getElementById('shotResult');
+    const startBtn = document.getElementById('startBtn');
+    const shotQueueList = document.getElementById('shotQueueList');
+
+    // ====== 게임 상태 변수 ======
+    let meteors = [];
+    let selectedMeteor = null;
+    let gameStarted = false;
+    let meteorSpawnInterval = 3000;
+    let meteorSpawnTimer = 0;
+    let successCount = 0;
+    let failCount = 0;
+    // 격추/실패 이펙트 관리
+    let effects = [];
+
+    // ====== 지구 및 운석 위치/크기 계산 ======
+    let earthRadius, earthX, earthY, meteorSpawnAltitude;
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        earthRadius = Math.min(canvas.width, canvas.height) * 0.03;
+        earthX = canvas.width / 2;
+        earthY = canvas.height / 2;
+        meteorSpawnAltitude = earthRadius * 12;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // ====== Meteor 클래스 ======
+    class Meteor {
+        constructor(angle, altitude, size, velocity) {
+            this.angle = angle;
+            this.altitude = altitude;
+            this.size = size;
+            this.velocity = velocity;
+            this.active = true;
+            this.shotReserved = false;
+            this.shotAltitude = null;
+            this.shotVelocity = null;
+            this.shotTime = null;
+            this.shotResult = null;
+            this.cannonballActive = false;
+            this.cannonballPos = null;
+            this.cannonballStart = null;
+            this.cannonballEnd = null;
+            this.cannonballStartTime = null;
+            this.cannonballDuration = null;
+        }
+        update(dt) {
+            if (!this.active) return;
+            this.velocity += GRAVITY * dt;
+            this.altitude -= this.velocity * dt;
+            // 운석이 지구에 충돌한 경우(격추 실패)
+            if (this.altitude <= earthRadius) {
+                this.active = false;
+                // 격추 실패 집계 및 이펙트 (운석 실제 충돌 위치, 지속시간 증가)
+                failCount++;
+                updateStatsPanel();
+                const {x, y} = this.getScreenPos();
+                effects.push({
+                    x: x,
+                    y: y,
+                    color: "rgba(255,46,136,0.25)",
+                    border: "#ff2e88",
+                    radius: earthRadius * 0.5,
+                    alpha: 1,
+                    time: performance.now(),
+                    duration: 1500 // ms
+                });
             }
-            update(dt) {
-                if (!this.active) return;
-                this.time += dt;
-                this.velocity = g * this.time;
-                this.altitude -= this.velocity * dt;
-                this.radius = earthRadius + this.altitude / scale;
-                if (this.altitude <= 0) {
-                    this.active = false;
-                }
-            }
-            draw(ctx) {
-                const x = earthX + Math.cos(this.angle) * this.radius;
-                const y = earthY + Math.sin(this.angle) * this.radius;
+        }
+        getScreenPos() {
+            const x = earthX + Math.cos(this.angle) * this.altitude;
+            const y = earthY + Math.sin(this.angle) * this.altitude;
+            return {x, y};
+        }
+        draw(ctx, selected) {
+            if (!this.active) return;
+            const {x, y} = this.getScreenPos();
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, this.size * earthRadius * 0.01, 0, 2 * Math.PI);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+            drawMeteorArrow(ctx, earthX, earthY, x, y, this.size * earthRadius * 0.1);
+            if (selected) {
                 ctx.beginPath();
-                ctx.arc(x, y, this.size, 0, 2 * Math.PI);
-                ctx.fillStyle = this.active ? "#ff9933" : "#555";
-                ctx.fill();
-                ctx.strokeStyle = "#fff";
+                ctx.arc(x, y, this.size * earthRadius * 0.13, 0, 2 * Math.PI);
+                ctx.strokeStyle = "#ff2222";
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(x, y, this.size * earthRadius * 0.18, 0, 2 * Math.PI);
+                ctx.strokeStyle = "#ff2222";
+                ctx.lineWidth = 2;
                 ctx.stroke();
             }
-            getPosition() {
-                return {
-                    x: earthX + Math.cos(this.angle) * this.radius,
-                    y: earthY + Math.sin(this.angle) * this.radius
+            if (this.velocity > 0) {
+                const {x: tailX, y: tailY} = {
+                    x: x + Math.cos(this.angle) * this.velocity * 2,
+                    y: y + Math.sin(this.angle) * this.velocity * 2
                 };
+                ctx.save();
+                const grad = ctx.createLinearGradient(x, y, tailX, tailY);
+                grad.addColorStop(0, "#ff2e88");
+                grad.addColorStop(1, "rgba(0,238,255,0)");
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(tailX, tailY);
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = this.size * earthRadius * 0.02;
+                ctx.shadowColor = "#ff2e88";
+                ctx.shadowBlur = 12;
+                ctx.stroke();
+                ctx.restore();
             }
-        }
-
-        // 대포 발사 예약 및 판정
-        function reserveShot(meteor, altitude, velocity) {
-            meteor.shotReserved = true;
-            meteor.shotAltitude = altitude;
-            meteor.shotVelocity = velocity;
-            // shotTime 계산: t = sqrt(2 * (h0 - h_shot) / g)
-            let t_shot = Math.sqrt(2 * (meteor.altitude - altitude) / g) + meteor.time;
-            meteor.shotTime = t_shot;
-        }
-
-        function checkShot(meteor) {
-            if (!meteor.shotReserved || !meteor.active) return;
-            if (meteor.time >= meteor.shotTime) {
-                let realAltitude = meteor.altitude;
-                let realVelocity = meteor.velocity;
-                let inputAltitude = meteor.shotAltitude;
-                let inputVelocity = meteor.shotVelocity;
-                let hit = (Math.round(realAltitude) === Math.round(inputAltitude)) &&
-                                    (Math.round(realVelocity) === Math.round(inputVelocity));
-                meteor.active = false;
-                showResult(hit, realAltitude, realVelocity, inputAltitude, inputVelocity);
-                meteor.shotReserved = false;
-            }
-        }
-
-        // 운석 생성 (지구 중심에서 랜덤 각도로)
-        let meteors = [];
-        function spawnMeteor() {
-            let angle = Math.random() * 2 * Math.PI;
-            let radius = meteorStartRadius;
-            let size = 30 + Math.random() * 20;
-            meteors.push(new Meteor(angle, radius, size));
-        }
-
-        // 게임 루프
-        let lastTime = null;
-        function gameLoop(ts) {
-            if (!lastTime) lastTime = ts;
-            let dt = (ts - lastTime) / 1000;
-            lastTime = ts;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 지구 그리기
+            // 운석 본체 (크기 2배)
+            ctx.save();
             ctx.beginPath();
-            ctx.arc(earthX, earthY, earthRadius, 0, 2 * Math.PI);
-            ctx.fillStyle = "#3399ff";
+            ctx.arc(x, y, this.size * earthRadius * 0.02, 0, 2 * Math.PI);
+            ctx.fillStyle = "#ff2e88";
+            ctx.shadowColor = "#ff2e88";
+            ctx.shadowBlur = 18;
             ctx.fill();
-            ctx.strokeStyle = "#fff";
-            ctx.lineWidth = 4;
-            ctx.stroke();
-            ctx.lineWidth = 1;
-
-            meteors.forEach(meteor => {
-                meteor.update(dt);
-                meteor.draw(ctx);
-                checkShot(meteor);
-            });
-
-            // 운석이 모두 떨어졌으면 새 운석 생성
-            if (meteors.every(m => !m.active)) {
-                spawnMeteor();
-            }
-
-            requestAnimationFrame(gameLoop);
+            ctx.restore();
         }
-        spawnMeteor();
-        requestAnimationFrame(gameLoop);
+    }
 
-        // 운석 클릭 이벤트
-        let selectedMeteor = null;
-        canvas.addEventListener("click", function(e) {
-            let rect = canvas.getBoundingClientRect();
-            let mx = e.clientX - rect.left;
-            let my = e.clientY - rect.top;
-            selectedMeteor = null;
-            for (let meteor of meteors) {
-                if (meteor.active) {
-                    let pos = meteor.getPosition();
-                    if (Math.hypot(mx - pos.x, my - pos.y) < meteor.size) {
-                        selectedMeteor = meteor;
-                        break;
-                    }
+    // ====== 운석 생성 방향 벡터(화살표) 그리기 ======
+    function drawMeteorArrow(ctx, x0, y0, x1, y1, meteorRadius) {
+        // 운석 방향 벡터
+        const dx = x1 - x0;
+        const dy = y1 - y0;
+        const len = Math.sqrt(dx*dx + dy*dy);
+        if (len < 1e-6) return;
+        // 지구 외곽선에서 10px 떨어진 지점에서 시작
+        const startOffset = 10;
+        const startX = x0 + dx * ((earthRadius + startOffset) / len);
+        const startY = y0 + dy * ((earthRadius + startOffset) / len);
+        // 운석 방향으로 10px 길이 화살표
+        const arrowLen = 10;
+        const arrowEndX = startX + dx * (arrowLen / len);
+        const arrowEndY = startY + dy * (arrowLen / len);
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(arrowEndX, arrowEndY);
+        ctx.strokeStyle = '#00ffd0';
+        ctx.lineWidth = 3.5;
+        ctx.shadowColor = '#00ffd0';
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        // 화살촉
+        const headlen = 10;
+        const angle = Math.atan2(dy, dx);
+        ctx.beginPath();
+        ctx.moveTo(arrowEndX, arrowEndY);
+        ctx.lineTo(arrowEndX - headlen * Math.cos(angle - Math.PI/7), arrowEndY - headlen * Math.sin(angle - Math.PI/7));
+        ctx.lineTo(arrowEndX - headlen * Math.cos(angle + Math.PI/7), arrowEndY - headlen * Math.sin(angle + Math.PI/7));
+        ctx.lineTo(arrowEndX, arrowEndY);
+        ctx.fillStyle = '#00ffd0';
+        ctx.shadowColor = '#00ffd0';
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.restore();
+    }
+    function updateStatsPanel() {
+        document.getElementById('successCount').innerHTML = `격추 성공: <b>${successCount}</b>`;
+        document.getElementById('failCount').innerHTML = `격추 실패: <b>${failCount}</b>`;
+    }
+    updateStatsPanel();
+    // ====== 운석 생성 ======
+    function spawnMeteor() {
+        if (meteors.filter(m => m.active).length >= MAX_METEOR_COUNT) return;
+        const angle = Math.random() * 2 * Math.PI;
+        const altitude = meteorSpawnAltitude;
+        const size = 3 + Math.random() * 2;
+        const velocity = Math.random() * 10;
+        meteors.push(new Meteor(angle, altitude, size, velocity));
+    }
+
+    // ====== 운석 클릭 선택 ======
+    canvas.addEventListener('mousedown', handleMeteorSelect);
+    function handleMeteorSelect(e) {
+        if (!gameStarted) return;
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        selectedMeteor = null;
+        for (const meteor of meteors) {
+            if (!meteor.active) continue;
+            const {x, y} = meteor.getScreenPos();
+            const r = meteor.size * earthRadius * 0.13;
+            if ((mx-x)**2 + (my-y)**2 < r*r) {
+                selectedMeteor = meteor;
+                break;
+            }
+        }
+        updateMeteorInfo();
+    }
+
+    // ====== UI 정보 갱신 ======
+    function updateMeteorInfo() {
+        if (!selectedMeteor || !selectedMeteor.active) {
+            meteorInfo.textContent = "운석을 클릭해 정보를 확인하세요.";
+            inputAltitude.value = "";
+            inputVelocity.value = "";
+            shotResult.textContent = "";
+            return;
+        }
+        meteorInfo.innerHTML =
+            `현재 고도: <b>${Math.round(selectedMeteor.altitude)}</b> m<br>` +
+            `현재 속력: <b>${Math.round(selectedMeteor.velocity)}</b> m/s`;
+        inputAltitude.value = "";
+        inputVelocity.value = "";
+        shotResult.textContent = "";
+    }
+
+    // ====== 대포 발사 예약 ======
+    shotForm.addEventListener('submit', handleShotReserve);
+    function handleShotReserve(e) {
+        e.preventDefault();
+        if (!selectedMeteor || !selectedMeteor.active) return;
+        const shotAltitude = parseInt(inputAltitude.value);
+        const shotVelocity = parseInt(inputVelocity.value);
+        if (isNaN(shotAltitude) || isNaN(shotVelocity)) return;
+        if (shotAltitude > selectedMeteor.altitude) {
+            shotResult.textContent = "현재 운석 고도보다 격추 고도가 높습니다.";
+            return;
+        }
+        // 예약 시점의 운석 고도/속력 사용
+        const meteorAltitude = selectedMeteor.altitude;
+        const meteorVelocity = selectedMeteor.velocity;
+        selectedMeteor.shotReserved = true;
+        selectedMeteor.shotAltitude = shotAltitude;
+        selectedMeteor.shotVelocity = shotVelocity;
+        // 등가속도 공식 계산 (수식은 사용자 편집 유지)
+        const a = GRAVITY;
+        const b = meteorVelocity;
+        const c = meteorAltitude - shotAltitude;
+        let tMeteor = 0;
+        tMeteor = (-b + Math.sqrt(b*b + 2*a*c)) / a;
+        if (!isFinite(tMeteor) || tMeteor < 0) tMeteor = 0;
+        tMeteor /= DT_SCALE;
+        // 대포알 이동 시간 계산 (배속 적용X)
+        const cannonballDistance = meteorAltitude;
+        const cannonballDuration = cannonballDistance / CANNONBALL_SPEED;
+        let fireDelay = tMeteor - cannonballDuration;
+        if (fireDelay < 0) fireDelay = 0;
+        selectedMeteor.cannonballFireTime = performance.now() + fireDelay * 1000;
+        selectedMeteor.shotTime = performance.now() + tMeteor * 1000;
+        shotResult.textContent = `대포 발사가 예약되었습니다.\n운석 도달 예상 시간: ${tMeteor.toFixed(2)}초\n대포알 발사까지 남은 시간: ${fireDelay.toFixed(2)}초`;
+        selectedMeteor.cannonballActive = false;
+        selectedMeteor.cannonballStart = null;
+        selectedMeteor.cannonballEnd = null;
+        selectedMeteor.cannonballStartTime = null;
+        selectedMeteor.cannonballDuration = cannonballDuration * 1000;
+        selectedMeteor.cannonballPos = null;
+    }
+
+    // ====== 격추 체크 및 대포알 모션 ======
+    function checkShot(meteor) {
+        if (!meteor.shotReserved || !meteor.active) return;
+        const now = performance.now();
+        if (!meteor.cannonballActive && meteor.shotReserved && now >= meteor.cannonballFireTime) {
+            meteor.cannonballActive = true;
+            meteor.cannonballStart = { x: earthX, y: earthY };
+            const { x, y } = meteor.getScreenPos();
+            meteor.cannonballEnd = { x, y };
+            meteor.cannonballStartTime = now;
+            if (!meteor.cannonballDuration) {
+                const dist = Math.sqrt((x-earthX)**2 + (y-earthY)**2);
+                meteor.cannonballDuration = (dist / CANNONBALL_SPEED) / DT_SCALE * 1000;
+            }
+            meteor.cannonballPos = { x: earthX, y: earthY };
+        }
+        if (meteor.cannonballActive && meteor.cannonballDuration > 0) {
+            let progress = Math.min(1, (now - meteor.cannonballStartTime) / meteor.cannonballDuration);
+            meteor.cannonballPos = {
+                x: meteor.cannonballStart.x + (meteor.cannonballEnd.x - meteor.cannonballStart.x) * progress,
+                y: meteor.cannonballStart.y + (meteor.cannonballEnd.y - meteor.cannonballStart.y) * progress
+            };
+            if (progress >= 1) {
+                const actualAltitude = Math.round(meteor.altitude);
+                const actualVelocity = Math.round(meteor.velocity);
+                const inputAltitude = Math.round(meteor.shotAltitude);
+                const inputVelocity = Math.round(meteor.shotVelocity);
+                const shotSuccess =
+                    actualAltitude === inputAltitude &&
+                    actualVelocity === inputVelocity;
+                meteor.shotResult = shotSuccess ? "운석 격추 성공!" : "격추 실패! (정확한 값 입력 필요)";
+                meteor.shotReserved = false;
+                meteor.cannonballActive = false;
+
+                // 격추 성공 카운트 및 UI 갱신 (실패는 운석 충돌 시 집계)
+                if (shotSuccess) {
+                    meteor.active = false;
+                    successCount++;
+                    updateStatsPanel();
                 }
-            }
-            if (selectedMeteor) {
-                showMeteorInfo(selectedMeteor);
-                document.getElementById("inputForm").style.display = "inline-block";
-                document.getElementById("result").textContent = "";
-            }
-        });
 
-        // 운석 정보 표시
-        function showMeteorInfo(meteor) {
-            document.getElementById("meteorInfo").innerHTML =
-                `<b>운석 정보</b><br>
-                고도: <b>${Math.round(meteor.altitude)}</b> m<br>
-                속력: <b>${Math.round(meteor.velocity)}</b> m/s`;
-            document.getElementById("inputAltitude").value = Math.round(meteor.altitude);
-            document.getElementById("inputVelocity").value = Math.round(meteor.velocity);
-        }
+                if (meteor === selectedMeteor) shotResult.textContent = meteor.shotResult;
 
-        // 대포 발사 예약 폼
-        document.getElementById("inputForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-            if (!selectedMeteor || !selectedMeteor.active) return;
-            let inputAltitude = parseInt(document.getElementById("inputAltitude").value, 10);
-            let inputVelocity = parseInt(document.getElementById("inputVelocity").value, 10);
-            reserveShot(selectedMeteor, inputAltitude, inputVelocity);
-            document.getElementById("result").textContent = "대포 발사가 예약되었습니다!";
-            document.getElementById("inputForm").style.display = "none";
-        });
-
-        // 결과 표시
-        function showResult(hit, realAlt, realVel, inputAlt, inputVel) {
-            if (hit) {
-                document.getElementById("result").innerHTML =
-                    `<span style="color:lime;">격추 성공!</span><br>
-                    실제 고도: ${Math.round(realAlt)} m, 입력: ${inputAlt} m<br>
-                    실제 속력: ${Math.round(realVel)} m/s, 입력: ${inputVel} m/s`;
-            } else {
-                document.getElementById("result").innerHTML =
-                    `<span style="color:red;">격추 실패!</span><br>
-                    실제 고도: ${Math.round(realAlt)} m, 입력: ${inputAlt} m<br>
-                    실제 속력: ${Math.round(realVel)} m/s, 입력: ${inputVel} m/s`;
+                // 파괴 이펙트 추가 (예시)
+                effects.push({
+                    x: meteor.cannonballPos.x,
+                    y: meteor.cannonballPos.y,
+                    color: shotSuccess ? "rgba(0,238,255,0.35)" : "rgba(255,46,136,0.35)",
+                    border: shotSuccess ? "#00eaff" : "#ff2e88",
+                    radius: earthRadius * 0.42,
+                    alpha: 1,
+                    time: performance.now(),
+                    duration: 700 // ms
+                });
             }
         }
+    }
+
+    // ====== 게임 루프 ======
+    let lastTime = null;
+    function gameLoop(ts) {
+        if (!lastTime) lastTime = ts;
+        const dt = ((ts - lastTime) / 1000) * DT_SCALE;
+        lastTime = ts;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawEarth();
+        // 이펙트 렌더링 (파괴 이펙트)
+        const now = performance.now();
+        effects = effects.filter(eff => {
+            const elapsed = now - eff.time;
+            if (elapsed > eff.duration) return false;
+            const fade = 1 - (elapsed / eff.duration);
+            ctx.save();
+            ctx.globalAlpha = eff.alpha * fade;
+            ctx.beginPath();
+            ctx.arc(eff.x, eff.y, eff.radius, 0, 2 * Math.PI);
+            ctx.fillStyle = eff.color;
+            ctx.shadowColor = eff.border;
+            ctx.shadowBlur = 24;
+            ctx.fill();
+            ctx.restore();
+            return true;
+        });
+        meteors.forEach(meteor => {
+            meteor.update(dt);
+            meteor.draw(ctx, meteor === selectedMeteor);
+            checkShot(meteor);
+            if (meteor.cannonballActive && meteor.cannonballPos) {
+                drawCannonball(meteor.cannonballPos.x, meteor.cannonballPos.y);
+            }
+        });
+        if (gameStarted) handleMeteorSpawning(dt);
+        updateShotQueueUI();
+        requestAnimationFrame(gameLoop);
+    }
+
+    // ====== 대포알 그리기 ======
+    function drawCannonball(x, y) {
+    // 대포알 궤적(혜성꼬리)
+    ctx.save();
+    if (typeof drawCannonball.lastPos === 'object') {
+        const grad = ctx.createLinearGradient(drawCannonball.lastPos.x, drawCannonball.lastPos.y, x, y);
+        grad.addColorStop(0, "#00eaff");
+        grad.addColorStop(1, "rgba(0,238,255,0)");
+        ctx.beginPath();
+        ctx.moveTo(drawCannonball.lastPos.x, drawCannonball.lastPos.y);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = earthRadius * 0.09;
+        ctx.shadowColor = "#00eaff";
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+    }
+    drawCannonball.lastPos = {x, y};
+    // 대포알 본체 (크기 확대)
+    ctx.beginPath();
+    ctx.arc(x, y, earthRadius * 0.14, 0, 2 * Math.PI);
+    ctx.fillStyle = "#00eaff";
+    ctx.shadowColor = "#00eaff";
+    ctx.shadowBlur = 18;
+    ctx.fill();
+    ctx.restore();
+}
+
+    // ====== 대포 발사 대기열 UI 갱신 ======
+    function updateShotQueueUI() {
+        const queue = meteors.filter(m => m.shotReserved && m.active);
+        shotQueueList.innerHTML = '';
+        if (queue.length === 0) {
+            shotQueueList.innerHTML = '<li>대기 중인 발사 없음</li>';
+            return;
+        }
+        queue.forEach((meteor, idx) => {
+            const remain = Math.max(0, Math.round((meteor.shotTime - performance.now()) / 1000));
+            const fireRemain = Math.max(0, Math.round((meteor.cannonballFireTime - performance.now()) / 1000));
+            shotQueueList.innerHTML += `<li>운석 #${meteors.indexOf(meteor)+1} | 고도: ${meteor.shotAltitude}m | 속력: ${meteor.shotVelocity}m/s <br>운석 도달 예상: <b>${remain}</b>초<br>대포알 발사까지: <b>${fireRemain}</b>초</li>`;
+        });
+    }
+
+    // ====== 지구 그리기 ======
+    function drawEarth() {
+        // 네온 지구 본체
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(earthX, earthY, earthRadius, 0, 2 * Math.PI);
+        ctx.fillStyle = "#00eaff";
+        ctx.shadowColor = "#00eaff";
+        ctx.shadowBlur = 32;
+        ctx.fill();
+        ctx.restore();
+        // 네온 동심원
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(earthX, earthY, earthRadius * 12, 0, 2 * Math.PI);
+        ctx.strokeStyle = "#00ffd0";
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([12, 12]);
+        ctx.shadowColor = "#00ffd0";
+        ctx.shadowBlur = 16;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // ====== 운석 생성 및 타이머 관리 ======
+    function handleMeteorSpawning(dt) {
+        meteorSpawnTimer += dt * 1000;
+        if (meteorSpawnTimer >= meteorSpawnInterval) {
+            if (meteors.filter(m => m.active).length < MAX_METEOR_COUNT) spawnMeteor();
+            meteorSpawnTimer = 0;
+            meteorSpawnInterval = Math.max(METEOR_SPAWN_MIN_INTERVAL, meteorSpawnInterval * METEOR_SPAWN_ACCEL);
+        }
+        if (meteors.every(m => !m.active)) {
+            meteors = [];
+            spawnMeteor();
+            meteorSpawnInterval = 3000;
+        }
+    }
+
+    // ====== 게임 시작 버튼 이벤트 ======
+    startBtn.addEventListener('click', startGame);
+    function startGame() {
+        if (gameStarted) return;
+        gameStarted = true;
+        meteors = [];
+        selectedMeteor = null;
+        meteorSpawnInterval = 3000;
+        meteorSpawnTimer = 0;
+        spawnMeteor();
+        updateMeteorInfo();
+        startBtn.style.display = "none";
+    }
+
+    // ====== 최초 UI 정보 갱신 및 게임 루프 시작 ======
+    updateMeteorInfo();
+    requestAnimationFrame(gameLoop);
     </script>
 </body>
 </html>
