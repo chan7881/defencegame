@@ -15,6 +15,7 @@
             touch-action: none;
             -webkit-user-select: none;
             user-select: none;
+            font-size: 80%;
         }
         #gameCanvas {
             display: block;
@@ -24,94 +25,101 @@
             height: 100vh;
             touch-action: none;
         }
-        @media (max-width: 600px) {
-            #uiPanel, #shotQueuePanel, #statsPanel {
-                min-width: unset;
-                width: 90vw;
-                left: 5vw !important;
-                right: 5vw !important;
-                font-size: 0.98em;
-                padding: 12px 8px;
-            }
-            #uiPanel {
-                top: 12px;
-            }
-            #shotQueuePanel {
-                top: 12px;
-                right: 5vw;
-            }
-            #statsPanel {
-                top: 8px;
-                left: 5vw;
-            }
-            #shotQueuePanel h3 {
-                font-size: 1em;
-            }
+        #statsPanel {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            background: rgba(20,30,50,0.85);
+            color: #e0f7fa;
+            padding: 14px 20px;
+            border-radius: 14px;
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            z-index: 20;
+            min-width: 120px;
+            box-shadow: 0 2px 12px #00eaff44, 0 1px 8px #0008;
+            border: 1.5px solid #00eaff88;
+            backdrop-filter: blur(5px);
+            font-size: 1em;
+        }
+        #statsPanel b {
+            color: #00eaff;
+            font-weight: 700;
+            text-shadow: 0 0 6px #00eaff88;
         }
         #uiPanel {
             position: absolute;
-            top: 32px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(20,30,50,0.85);
+            top: 100px;
+            left: 32px;
+            background: rgba(20,30,50,0.92);
             color: #e0f7fa;
-            padding: 22px 32px;
-            border-radius: 22px;
+            padding: 28px 20px 32px 20px;
+            border-radius: 18px;
             font-family: 'Orbitron', 'Segoe UI', sans-serif;
-            z-index: 10;
-            min-width: 340px;
-            box-shadow: 0 4px 32px #00eaff44, 0 1px 8px #0008;
-            border: 1.5px solid #00eaff88;
-            backdrop-filter: blur(6px);
+            z-index: 15;
+            min-width: 120px;
+            max-width: 120px;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            box-shadow: 0 2px 16px #00eaff33, 0 1px 8px #0008;
+            border: 1.5px solid #00eaff55;
+            backdrop-filter: blur(5px);
+            font-size: 1em;
         }
-        #uiPanel input {
-            width: 70px;
-            margin-right: 10px;
-            background: #101c2c;
-            color: #00eaff;
-            border: 1.5px solid #00eaff88;
-            border-radius: 7px;
-            font-size: 1.05em;
-            padding: 4px 8px;
-            outline: none;
-            transition: border 0.2s;
-        }
-        #uiPanel input:focus {
-            border: 1.5px solid #00ffd0;
-            background: #162a3a;
-        }
-        #meteorInfo {
-            margin-bottom: 12px;
-            color: #00eaff;
-            font-size: 1.08em;
-            letter-spacing: 0.5px;
-        }
-        #shotResult {
-            color: #ff2e88;
-            font-weight: bold;
-            margin-top: 10px;
-            text-shadow: 0 0 8px #ff2e88aa;
-            font-size: 1.08em;
-        }
-        #startBtn {
-            display: block;
-            margin: 0 auto 16px auto;
-            padding: 10px 28px;
-            font-size: 1.18em;
+        #uiPanel button {
             background: linear-gradient(90deg, #00eaff 0%, #0055ff 100%);
             color: #fff;
             border: none;
             border-radius: 12px;
-            cursor: pointer;
-            font-family: 'Orbitron', 'Segoe UI', sans-serif;
             font-weight: 600;
             box-shadow: 0 2px 12px #00eaff44;
             letter-spacing: 1px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            font-size: 1.18em;
+            padding: 10px 28px;
             transition: background 0.2s, box-shadow 0.2s;
         }
-        #startBtn:hover {
+        #uiPanel button:hover {
             background: linear-gradient(90deg, #00ffd0 0%, #0055ff 100%);
             box-shadow: 0 4px 24px #00eaff88;
+        }
+        #uiPanel select, #uiPanel input {
+            font-family: inherit;
+            font-size: 1em;
+            border-radius: 7px;
+            border: 1.2px solid #00eaff88;
+            background: #101c2c;
+            color: #00eaff;
+            margin: 8px 0 12px 0;
+            padding: 8px 10px;
+            outline: none;
+            transition: border 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #uiPanel form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        #meteorInfo {
+            margin-bottom: 14px;
+            color: #00eaff;
+            font-size: 1.05em;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+        #shotResult {
+            color: #ff2e88;
+            font-weight: bold;
+            margin-top: 12px;
+            text-shadow: 0 0 8px #ff2e88aa;
+            font-size: 1em;
+            min-height: 24px;
         }
         #shotQueuePanel {
             position: absolute;
@@ -119,18 +127,20 @@
             right: 40px;
             background: rgba(20,30,50,0.85);
             color: #e0f7fa;
-            padding: 20px 22px;
-            border-radius: 22px;
+            padding: 16px 18px;
+            border-radius: 16px;
             font-family: 'Orbitron', 'Segoe UI', sans-serif;
             z-index: 10;
-            min-width: 240px;
-            box-shadow: 0 4px 32px #00eaff44, 0 1px 8px #0008;
-            border: 1.5px solid #00eaff88;
-            backdrop-filter: blur(6px);
+            min-width: 200px;
+            max-width: 260px;
+            box-shadow: 0 4px 24px #00eaff22, 0 1px 8px #0008;
+            border: 1.5px solid #00eaff33;
+            backdrop-filter: blur(4px);
+            font-size: 0.98em;
         }
         #shotQueuePanel h3 {
-            margin: 0 0 10px 0;
-            font-size: 1.12em;
+            margin: 0 0 8px 0;
+            font-size: 1.08em;
             color: #00eaff;
             letter-spacing: 1px;
             font-weight: 700;
@@ -142,52 +152,31 @@
             margin: 0;
         }
         #shotQueueList li {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             background: linear-gradient(90deg, #101c2c 0%, #162a3a 100%);
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 1.01em;
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 0.98em;
             color: #00eaff;
-            border: 1px solid #00eaff33;
-            box-shadow: 0 1px 8px #00eaff22;
+            border: 1px solid #00eaff22;
+            box-shadow: 0 1px 6px #00eaff11;
         }
         #shotQueueList li b {
             color: #ff2e88;
             text-shadow: 0 0 6px #ff2e88aa;
         }
-        #statsPanel {
-            position: absolute;
-            top: 24px;
-            left: 32px;
-            background: rgba(20,30,50,0.85);
-            color: #e0f7fa;
-            padding: 16px 22px;
-            border-radius: 16px;
-            font-family: 'Orbitron', 'Segoe UI', sans-serif;
-            z-index: 20;
-            min-width: 120px;
-            box-shadow: 0 2px 16px #00eaff44, 0 1px 8px #0008;
-            border: 1.5px solid #00eaff88;
-            backdrop-filter: blur(6px);
-            font-size: 1.08em;
-        }
-        #statsPanel b {
-            color: #00eaff;
-            font-weight: 700;
-            text-shadow: 0 0 6px #00eaff88;
-        }
         label {
             color: #e0f7fa;
-            font-size: 1.05em;
+            font-size: 1em;
             margin-right: 8px;
         }
-        form button[type=\"submit\"] {
+        form button[type="submit"] {
             background: linear-gradient(90deg, #00eaff 0%, #0055ff 100%);
             color: #fff;
             border: none;
             border-radius: 8px;
             padding: 7px 18px;
-            font-size: 1.08em;
+            font-size: 1em;
             font-family: 'Orbitron', 'Segoe UI', sans-serif;
             font-weight: 600;
             cursor: pointer;
@@ -195,7 +184,7 @@
             margin-left: 10px;
             transition: background 0.2s, box-shadow 0.2s;
         }
-        form button[type=\"submit\"]:hover {
+        form button[type="submit"]:hover {
             background: linear-gradient(90deg, #00ffd0 0%, #0055ff 100%);
             box-shadow: 0 4px 16px #00eaff88;
         }
@@ -211,10 +200,20 @@
         <button id="startBtn">게임 시작</button>
         <div id="meteorInfo">운석을 클릭해 정보를 확인하세요.</div>
         <form id="shotForm" autocomplete="off">
-            <label>격추 고도(m): <input type="number" id="inputAltitude" step="1"></label>
+            <label>격추 고도:
+                <select id="inputAltitude">
+                    <option value="200">고고도 (200m)</option>
+                    <option value="150">중고도 (150m)</option>
+                    <option value="100">저고도 (100m)</option>
+                </select>
+            </label>
             <label>운석 속력(m/s): <input type="number" id="inputVelocity" step="1"></label>
             <button type="submit">대포 발사 예약</button>
         </form>
+        <div style="display: flex; flex-direction: column; align-items: center; margin-top: 4px;">
+            <input type="checkbox" id="energyCheck" style="margin-bottom: 4px;">
+            <span style="font-size: 1em; color: #e0f7fa;">역학적 에너지 표시</span>
+        </div>
         <div id="shotResult"></div>
     </div>
     <div id="shotQueuePanel">
@@ -244,7 +243,8 @@
         earthRadius = Math.min(window.innerWidth, window.innerHeight) * 0.03;
         earthX = window.innerWidth / 2;
         earthY = window.innerHeight / 2;
-        meteorSpawnAltitude = earthRadius * 12;
+        // 운석 생성 고도(300m) 픽셀 변환
+        meteorSpawnAltitude = (300 / 200) * earthRadius * 12; // 300m 고정, 기존 200m 기준에서 1.5배
     }
     const ctx = canvas.getContext('2d');
     const meteorInfo = document.getElementById('meteorInfo');
@@ -254,6 +254,7 @@
     const shotResult = document.getElementById('shotResult');
     const startBtn = document.getElementById('startBtn');
     const shotQueueList = document.getElementById('shotQueueList');
+    const energyCheck = document.getElementById('energyCheck');
 
     // ====== 게임 상태 변수 ======
     let meteors = [];
@@ -270,6 +271,12 @@
     let earthRadius, earthX, earthY, meteorSpawnAltitude;
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
+
+    // 드롭다운 선택 고도값(미터) 관리
+    let selectedAltitude = parseInt(inputAltitude.value);
+    inputAltitude.addEventListener('change', function() {
+        selectedAltitude = parseInt(this.value);
+    });
 
     // ====== Meteor 클래스 ======
     class Meteor {
@@ -324,26 +331,26 @@
             const {x, y} = this.getScreenPos();
             ctx.save();
             ctx.beginPath();
-            ctx.arc(x, y, this.size * earthRadius * 0.01, 0, 2 * Math.PI);
+            ctx.arc(x, y, this.size * earthRadius * 0.015, 0, 2 * Math.PI); // 본체 크기 1.5배
             ctx.fillStyle = "#fff";
             ctx.fill();
-            drawMeteorArrow(ctx, earthX, earthY, x, y, this.size * earthRadius * 0.1);
+            drawMeteorArrow(ctx, earthX, earthY, x, y, this.size * earthRadius * 0.15); // 화살표 크기 1.5배
             if (selected) {
                 ctx.beginPath();
-                ctx.arc(x, y, this.size * earthRadius * 0.13, 0, 2 * Math.PI);
+                ctx.arc(x, y, this.size * earthRadius * 0.195, 0, 2 * Math.PI); // 선택 외곽선 1.5배
                 ctx.strokeStyle = "#ff2222";
                 ctx.lineWidth = 4;
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.arc(x, y, this.size * earthRadius * 0.18, 0, 2 * Math.PI);
+                ctx.arc(x, y, this.size * earthRadius * 0.27, 0, 2 * Math.PI); // 선택 외곽선 1.5배
                 ctx.strokeStyle = "#ff2222";
                 ctx.lineWidth = 2;
                 ctx.stroke();
             }
             if (this.velocity > 0) {
                 const {x: tailX, y: tailY} = {
-                    x: x + Math.cos(this.angle) * this.velocity * 2,
-                    y: y + Math.sin(this.angle) * this.velocity * 2
+                    x: x + Math.cos(this.angle) * this.velocity * 3, // 꼬리 길이 1.5배
+                    y: y + Math.sin(this.angle) * this.velocity * 3
                 };
                 ctx.save();
                 const grad = ctx.createLinearGradient(x, y, tailX, tailY);
@@ -353,19 +360,19 @@
                 ctx.moveTo(x, y);
                 ctx.lineTo(tailX, tailY);
                 ctx.strokeStyle = grad;
-                ctx.lineWidth = this.size * earthRadius * 0.02;
+                ctx.lineWidth = this.size * earthRadius * 0.03; // 꼬리 두께 1.5배
                 ctx.shadowColor = "#ff2e88";
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = 18;
                 ctx.stroke();
                 ctx.restore();
             }
-            // 운석 본체 (크기 2배)
+            // 운석 본체 (크기 2배 -> 1.5배로 조정)
             ctx.save();
             ctx.beginPath();
-            ctx.arc(x, y, this.size * earthRadius * 0.02, 0, 2 * Math.PI);
+            ctx.arc(x, y, this.size * earthRadius * 0.03, 0, 2 * Math.PI); // 본체 크기 1.5배
             ctx.fillStyle = "#ff2e88";
             ctx.shadowColor = "#ff2e88";
-            ctx.shadowBlur = 18;
+            ctx.shadowBlur = 27;
             ctx.fill();
             ctx.restore();
         }
@@ -420,7 +427,7 @@
         const angle = Math.random() * 2 * Math.PI;
         const altitude = meteorSpawnAltitude;
         const size = 3 + Math.random() * 2;
-        const velocity = Math.random() * 10;
+        const velocity = Math.random() * 30; // 초기 속력 범위 0~30으로 증가
         meteors.push(new Meteor(angle, altitude, size, velocity));
     }
 
@@ -462,18 +469,32 @@
     }, {passive: false});
 
     // ====== UI 정보 갱신 ======
+    let showEnergy = false;
+    energyCheck.checked = false;
+    energyCheck.addEventListener('change', function() {
+        showEnergy = this.checked;
+        updateMeteorInfo();
+    });
     function updateMeteorInfo() {
         if (!selectedMeteor || !selectedMeteor.active) {
             meteorInfo.textContent = "운석을 클릭해 정보를 확인하세요.";
-            inputAltitude.value = "";
             inputVelocity.value = "";
             shotResult.textContent = "";
             return;
         }
-        meteorInfo.innerHTML =
+        let infoHtml =
             `현재 고도: <b>${Math.round(selectedMeteor.altitude)}</b> m<br>` +
             `현재 속력: <b>${Math.round(selectedMeteor.velocity)}</b> m/s`;
-        inputAltitude.value = "";
+        if (showEnergy) {
+            // 역학적 에너지 계산: E = mgh + 0.5mv^2, m=1kg 가정
+            const m = 1;
+            const h = selectedMeteor.altitude;
+            const v = selectedMeteor.velocity;
+            let E = m * GRAVITY * h + 0.5 * m * v * v;
+            E = Math.round(E * 100) / 100; // 소수점 둘째 자리 반올림
+            infoHtml += `<br>역학적E: <b>${E}</b> J`;
+        }
+        meteorInfo.innerHTML = infoHtml;
         inputVelocity.value = "";
         shotResult.textContent = "";
     }
@@ -483,7 +504,7 @@
     function handleShotReserve(e) {
         e.preventDefault();
         if (!selectedMeteor || !selectedMeteor.active) return;
-        const shotAltitude = parseInt(inputAltitude.value);
+        const shotAltitude = selectedAltitude;
         const shotVelocity = parseInt(inputVelocity.value);
         if (isNaN(shotAltitude) || isNaN(shotVelocity)) return;
         if (shotAltitude > selectedMeteor.altitude) {
@@ -547,9 +568,10 @@
                 const actualVelocity = Math.round(meteor.velocity);
                 const inputAltitude = Math.round(meteor.shotAltitude);
                 const inputVelocity = Math.round(meteor.shotVelocity);
+                // 판정: 고도는 정확히 일치, 속력은 +-1까지 허용
                 const shotSuccess =
                     actualAltitude === inputAltitude &&
-                    actualVelocity === inputVelocity;
+                    Math.abs(actualVelocity - inputVelocity) <= 1;
                 meteor.shotResult = shotSuccess ? "운석 격추 성공!" : "격추 실패! (정확한 값 입력 필요)";
                 meteor.shotReserved = false;
                 meteor.cannonballActive = false;
@@ -586,6 +608,10 @@
         lastTime = ts;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawEarth();
+        // 선택한 격추 고도에 붉은색 점선 동심원 표시(고도값을 픽셀로 변환)
+        if (selectedAltitude) {
+            drawAltitudeCircle(selectedAltitude);
+        }
         // 이펙트 렌더링 (파괴 이펙트)
         const now = performance.now();
         effects = effects.filter(eff => {
@@ -670,15 +696,32 @@
         ctx.shadowBlur = 32;
         ctx.fill();
         ctx.restore();
-        // 네온 동심원
+        // 운석 생성 고도(300m) 푸른 외곽선 동심원
         ctx.save();
         ctx.beginPath();
-        ctx.arc(earthX, earthY, earthRadius * 12, 0, 2 * Math.PI);
+        ctx.arc(earthX, earthY, meteorSpawnAltitude, 0, 2 * Math.PI);
         ctx.strokeStyle = "#00ffd0";
         ctx.lineWidth = 2.5;
         ctx.setLineDash([12, 12]);
         ctx.shadowColor = "#00ffd0";
         ctx.shadowBlur = 16;
+        ctx.stroke();
+        ctx.restore();
+    }
+    // 선택한 격추 고도에 붉은색 점선 동심원 표시 함수
+    function drawAltitudeCircle(altitude) {
+        // 고도(m)를 픽셀로 변환: 1m = meteorSpawnAltitude/300(px)
+        // meteorSpawnAltitude는 300m에 해당하는 픽셀값
+        let radiusPx = (altitude / 300) * meteorSpawnAltitude;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(earthX, earthY, radiusPx, 0, 2 * Math.PI);
+        ctx.strokeStyle = "#ff2e88";
+        ctx.lineWidth = 3;
+        ctx.setLineDash([10, 10]);
+        ctx.shadowColor = "#ff2e88";
+        ctx.shadowBlur = 12;
+        ctx.globalAlpha = 0.7;
         ctx.stroke();
         ctx.restore();
     }
