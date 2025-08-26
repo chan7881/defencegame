@@ -16,6 +16,7 @@
             -webkit-user-select: none;
             user-select: none;
             font-size: 80%;
+            color: #e0f7fa;
         }
         #gameCanvas {
             display: block;
@@ -29,43 +30,44 @@
             position: absolute;
             top: 24px;
             left: 32px;
-            background: rgba(20,30,50,0.85);
-            color: #e0f7fa;
-            padding: 14px 20px;
-            border-radius: 14px;
+            background: rgba(20,30,50,0.92);
+            color: #00eaff;
+            padding: 16px 20px;
+            border-radius: 16px;
             font-family: 'Orbitron', 'Segoe UI', sans-serif;
             z-index: 20;
-            min-width: 120px;
-            box-shadow: 0 2px 12px #00eaff44, 0 1px 8px #0008;
+            min-width: 150px;
+            max-width: 170px;
+            box-shadow: 0 2px 16px #00eaff44, 0 1px 8px #0008;
             border: 1.5px solid #00eaff88;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(6px);
             font-size: 1em;
         }
         #statsPanel b {
-            color: #00eaff;
+            color: #00ffd0;
             font-weight: 700;
-            text-shadow: 0 0 6px #00eaff88;
+            text-shadow: 0 0 6px #00ffd0;
         }
         #uiPanel {
             position: absolute;
             top: 100px;
             left: 32px;
-            background: rgba(20,30,50,0.92);
+            background: rgba(20,30,50,0.96);
             color: #e0f7fa;
             padding: 28px 20px 32px 20px;
             border-radius: 18px;
             font-family: 'Orbitron', 'Segoe UI', sans-serif;
             z-index: 15;
-            min-width: 120px;
-            max-width: 120px;
+            min-width: 150px;
+            max-width: 170px;
             min-height: 420px;
             display: flex;
             flex-direction: column;
             align-items: stretch;
             justify-content: flex-start;
             box-shadow: 0 2px 16px #00eaff33, 0 1px 8px #0008;
-            border: 1.5px solid #00eaff55;
-            backdrop-filter: blur(5px);
+            border: 1.5px solid #00eaff88;
+            backdrop-filter: blur(6px);
             font-size: 1em;
         }
         #uiPanel button {
@@ -86,7 +88,7 @@
             background: linear-gradient(90deg, #00ffd0 0%, #0055ff 100%);
             box-shadow: 0 4px 24px #00eaff88;
         }
-        #uiPanel select, #uiPanel input {
+        #uiPanel input, #uiPanel select {
             font-family: inherit;
             font-size: 1em;
             border-radius: 7px;
@@ -100,6 +102,10 @@
             width: 100%;
             box-sizing: border-box;
         }
+        #uiPanel input:focus, #uiPanel select:focus {
+            border: 1.5px solid #00ffd0;
+            background: #162a3a;
+        }
         #uiPanel form {
             display: flex;
             flex-direction: column;
@@ -108,7 +114,7 @@
         }
         #meteorInfo {
             margin-bottom: 14px;
-            color: #00eaff;
+            color: #00ffd0;
             font-size: 1.05em;
             letter-spacing: 0.5px;
             text-align: left;
@@ -125,26 +131,26 @@
             position: absolute;
             top: 32px;
             right: 40px;
-            background: rgba(20,30,50,0.85);
-            color: #e0f7fa;
+            background: rgba(20,30,50,0.92);
+            color: #00eaff;
             padding: 16px 18px;
             border-radius: 16px;
             font-family: 'Orbitron', 'Segoe UI', sans-serif;
             z-index: 10;
-            min-width: 200px;
-            max-width: 260px;
+            min-width: 170px;
+            max-width: 200px;
             box-shadow: 0 4px 24px #00eaff22, 0 1px 8px #0008;
-            border: 1.5px solid #00eaff33;
-            backdrop-filter: blur(4px);
+            border: 1.5px solid #00eaff88;
+            backdrop-filter: blur(6px);
             font-size: 0.98em;
         }
         #shotQueuePanel h3 {
             margin: 0 0 8px 0;
             font-size: 1.08em;
-            color: #00eaff;
+            color: #00ffd0;
             letter-spacing: 1px;
             font-weight: 700;
-            text-shadow: 0 0 8px #00eaff88;
+            text-shadow: 0 0 8px #00ffd0;
         }
         #shotQueueList {
             list-style: none;
@@ -158,14 +164,14 @@
             padding: 7px 10px;
             font-size: 0.98em;
             color: #00eaff;
-            border: 1px solid #00eaff22;
-            box-shadow: 0 1px 6px #00eaff11;
+            border: 1px solid #00eaff44;
+            box-shadow: 0 1px 6px #00eaff22;
         }
         #shotQueueList li b {
             color: #ff2e88;
             text-shadow: 0 0 6px #ff2e88aa;
         }
-        label {
+        label, span {
             color: #e0f7fa;
             font-size: 1em;
             margin-right: 8px;
@@ -181,12 +187,31 @@
             font-weight: 600;
             cursor: pointer;
             box-shadow: 0 2px 8px #00eaff44;
-            margin-left: 10px;
+            margin-left: 0;
+            margin-top: 8px;
             transition: background 0.2s, box-shadow 0.2s;
         }
         form button[type="submit"]:hover {
             background: linear-gradient(90deg, #00ffd0 0%, #0055ff 100%);
             box-shadow: 0 4px 16px #00eaff88;
+        }
+        /* 역학적 에너지 체크박스 및 문구 통일 스타일 */
+        .energy-check-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 4px;
+        }
+        .energy-check-wrap input[type="checkbox"] {
+            accent-color: #00eaff;
+            width: 18px;
+            height: 18px;
+            margin-bottom: 4px;
+        }
+        .energy-check-wrap span {
+            font-size: 1em;
+            color: #00eaff;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -210,9 +235,9 @@
             <label>운석 속력(m/s): <input type="number" id="inputVelocity" step="1"></label>
             <button type="submit">대포 발사 예약</button>
         </form>
-        <div style="display: flex; flex-direction: column; align-items: center; margin-top: 4px;">
-            <input type="checkbox" id="energyCheck" style="margin-bottom: 4px;">
-            <span style="font-size: 1em; color: #e0f7fa;">역학적 에너지 표시</span>
+        <div class="energy-check-wrap">
+            <input type="checkbox" id="energyCheck">
+            <span>역학적 에너지 표시</span>
         </div>
         <div id="shotResult"></div>
     </div>
@@ -491,8 +516,8 @@
             const h = selectedMeteor.altitude;
             const v = selectedMeteor.velocity;
             let E = m * GRAVITY * h + 0.5 * m * v * v;
-            E = Math.round(E * 100) / 100; // 소수점 둘째 자리 반올림
-            infoHtml += `<br>역학적E: <b>${E}</b> J`;
+            E = Math.round(E * 10) / 10; // 소수점 첫째 자리까지
+            infoHtml += `<br>역학적E: <b>${E}</b> J/kg`;
         }
         meteorInfo.innerHTML = infoHtml;
         inputVelocity.value = "";
